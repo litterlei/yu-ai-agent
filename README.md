@@ -1,298 +1,183 @@
-# AI 超级智能体项目
+# Yu AI Agent 使用指南
 
-> 作者：[程序员鱼皮](https://yuyuanweb.feishu.cn/wiki/Abldw5WkjidySxkKxU2cQdAtnah)
->
-> 本项目为教学项目，提供完整视频教程 + 文字教程 + 简历写法 + 面试题解 + 答疑服务，帮你提升项目能力，给简历增加亮点！
->
-> ⭐️ 加入项目系列学习：[加入编程导航](https://www.codefather.cn/vip)
+本项目提供两个可直接使用的 AI 应用：带多轮记忆的 **AI 恋爱大师**，以及可调用本地工具完成任务的 **YuManus 超级智能体**。包含 Spring Boot 后端、Vue 3 前端和一个可选的图片搜索 MCP 服务。
 
+## 环境要求
 
-## 项目介绍
+- JDK 21
+- Node.js 16+、npm 7+
+- 阿里云 DashScope API Key（对话和向量嵌入必需）
 
-> 视频介绍：https://www.bilibili.com/video/BV1UoLezKEbm
+可选功能还需要：联网搜索的 SearchAPI Key、PgVector 的 PostgreSQL + pgvector，或 MCP 所需的 Node.js / Java。
 
-这是一套以 **AI 开发实战** 为核心的项目教程，将通过开发 **AI 恋爱大师应用 + 拥有自主规划能力的超级智能体**，带大家掌握新时代程序员必知必会的 AI 核心概念、AI 实用工具、AI 编程技术、AI 框架原理、AI 调优技巧，大幅增加求职的竞争力！
+## 配置密钥
 
-![](https://pic.yupi.icu/1/8052592c-97ce-4568-b82e-6153924a053c.png)
+编辑 `src/main/resources/application.yml`，将 API Key 改为环境变量引用：
 
-`AI 恋爱大师应用` 可以依赖 AI 大模型解决用户的情感问题，支持多轮对话、基于自定义知识库进行问答、自主调用工具和 MCP 服务完成任务，比如调用地图服务获取附近地点并制定约会计划。
+```yaml
+spring:
+  ai:
+    dashscope:
+      api-key: ${DASHSCOPE_API_KEY}
+      chat:
+        options:
+          model: qwen-plus
+search-api:
+  api-key: ${SEARCH_API_KEY}
+```
 
-![](https://pic.yupi.icu/1/1745225631067-44a111e1-1032-4f1c-bd69-9f08a59a654b.png)
+PowerShell 临时设置：
 
-此外，还会手把手带大家完成基于 ReAct 模式的 `自主规划智能体 YuManus` ，可以利用网页搜索、资源下载和 PDF 生成工具，帮用户制定完整的约会计划并生成文档：
+```powershell
+$env:DASHSCOPE_API_KEY = "你的 DashScope API Key"
+$env:SEARCH_API_KEY = "你的 SearchAPI Key"
+```
 
-![](https://pic.yupi.icu/1/1745224663573-04af8f65-2da4-4ef9-8033-a179e703f9c4.png)
+在 IntelliJ IDEA 以调试模式启动时，终端中的临时环境变量不会自动传入 Run/Debug Configuration。请打开 **Run → Edit Configurations → YuAiAgentApplication**，在 **Environment variables** 中添加：
 
-当然，学会这个项目后，你不仅能开发 AI 恋爱大师，而是能灵活开发各种复杂的 AI 应用，尽情发挥自己的想象力吧！
+```text
+DASHSCOPE_API_KEY=你的 DashScope API Key;SEARCH_API_KEY=你的 SearchAPI Key
+```
 
+保存后重新点击 Debug。也可以在 Windows 用户环境变量中创建这两个变量，然后**完全退出并重新打开 IDEA**。切勿把密钥写进提交到 Git 的 `application.yml`。
 
+`model` 必须替换为你的 DashScope 账户可用的模型。当前依赖版本下，`qwen3.7-plus` 会导致 DashScope 返回 `InvalidParameter: url error`；请使用 `qwen-plus`，或先确认目标模型与当前 SDK 版本兼容。当前配置文件里存在疑似真实密钥：请不要提交真实密钥，建议立即在服务商控制台轮换该密钥，再改用环境变量或不提交的 `application-prod.yml`。
 
-## 为什么要带做这个项目？
+### Ollama（可选）
 
-本项目选题新颖、业务真实，区别于增删改查的 “烂大街” 项目，鱼皮会带你实战大量新技术和企业应用场景，用一套实战教程将程序员必知必会的 **AI 技术一网打尽**，帮你成为 AI 时代企业的香饽饽，给你的简历和求职大幅增加竞争力。
+`application.yml` 已声明 Ollama 的本地地址与 `gemma3:1b`，但现有 Web API 注入的是 DashScope 的 `ChatModel`，所以页面和接口仍需要 DashScope Key。若要运行本地模型示例或自行切换模型：
 
-鱼皮给大家讲的都是 **通用的项目开发方法和架构设计套路**，从这个项目中你将学到：
+```powershell
+ollama pull gemma3:1b
+```
 
-- 主流 AI 应用平台的使用
-- AI 大模型的 4 种接入方式
-- AI 开发框架（Spring AI + LangChain4j）
-- AI 大模型本地部署
-- Prompt 工程和优化技巧
-- Spring AI 核心特性：如自定义 Advisor、对话记忆、结构化输出
-- RAG 知识库实战、原理和调优技巧
-- PgVector 向量数据库 + 云数据库服务
-- Tool Calling 工具调用实战及原理
-- MCP 模型上下文协议和服务开发
-- AI 智能体 Manus 原理和自主开发
-- AI 服务化和 Serverless 部署上线
-- 各种新概念：如多模态、智能体工作流、A2A 协议、大模型评估等
+## 启动后端
 
-举个例子，RAG 核心特性实战及全链路调优：
+在项目根目录执行：
 
-![](https://pic.yupi.icu/1/1746250760306-3b545556-59df-43a9-b843-b73ec9b5a867.png)
+```powershell
+.\mvnw.cmd spring-boot:run
+```
 
-项目还有其他优势：
+后端地址为 `http://localhost:8123`，API 均带 `/api` 前缀。验证服务：
 
-- AI 云平台和编程双端实战，不仅会用 AI 服务，还会自己写！
-- 基于官方文档讲解最新的 AI 技术，细致入微，手撕文档和源码！
-- 分享大量 AI 扩展知识和编程技巧，掌握最佳实践！
+```powershell
+Invoke-WebRequest http://localhost:8123/api/health
+```
 
-鱼皮带你手撕开源框架 OpenManus 的源码：
+应返回 `ok`。接口文档：
 
-![](https://pic.yupi.icu/1/ae36dd94-e87e-4dfe-ae31-81a6cc32c9e8.png)
+- http://localhost:8123/api/swagger-ui.html
+- http://localhost:8123/api/doc.html（Knife4j，若当前依赖版本提供此入口）
 
-此外，还能学会很多作图、思考问题、对比方案的方法，提升排查问题、自主解决 Bug 的能力。
+## 启动前端
 
+另开终端：
 
+```powershell
+cd yu-ai-agent-frontend
+npm install
+npm run dev
+```
 
-### 鱼皮系列项目优势
+打开 Vite 输出的地址（默认 `http://localhost:3000`）。开发环境会访问 `http://localhost:8123/api`，后端已放行跨域。
 
-鱼皮的原创项目以 **实战** 为主，用 **全程直播** 的方式 **从 0 到 1** 带做，从需求分析、技术选型、项目设计、项目初始化、Demo 编写、前后端开发实现、项目优化、部署上线等，每个环节我都 **从理论到实践** 给大家讲的明明白白、每个细节都不放过！
+构建生产前端：
 
-比起看网上的教程学习，鱼皮项目系列的优势：从学知识 => 实践项目 => 复习笔记 => 项目答疑 => 简历写法 => 面试题解的一条龙服务：
+```powershell
+npm run build
+```
 
-![](https://pic.yupi.icu/1/1714011299057-cb31704a-6c33-410f-888d-74c2d7e1c6e4.png)
+生产前端请求同域 `/api`，因此反向代理需把 `/api` 转发到后端 8123 端口。
 
-编程导航已有 **10 多套项目教程！**每个项目的学习重点不同，几乎全都是前端 + 后端的 **全栈项目** 。
+## API 使用
 
-可以看看大家的真实评价，很多小伙伴通过跟我做项目，提升了技术并拿到了 offer！
+所有接口均为 `GET`。`message` 需 URL 编码；恋爱大师使用相同 `chatId` 才会保留一段会话的上下文。记忆仅在内存中保存，最多 20 条消息，服务重启后清空。
 
-![](https://pic.yupi.icu/1/image-20250422160549546.png)
-
-往期项目介绍视频：[https://bilibili.com/video/BV1YvmbYbEgS](https://www.bilibili.com/video/BV1YvmbYbEgS/)
-
-
-## 项目功能梳理
-
-项目中，我们将开发一个 AI 恋爱大师应用、一个拥有自主规划能力的超级智能体，以及一系列工具和 MCP 服务。
-
-具体需求如下：
-
-- AI 恋爱大师应用：用户在恋爱过程中难免遇到各种难题，让 AI 为用户提供贴心情感指导。支持多轮对话、对话记忆持久化、RAG 知识库检索、工具调用、MCP 服务调用。
-- AI 超级智能体：可以根据用户的需求，自主推理和行动，直到完成目标。
-- 提供给 AI 的工具：包括联网搜索、文件操作、网页抓取、资源下载、终端操作、PDF 生成。
-- AI MCP 服务：可以从特定网站搜索图片。
-
-![](https://github.com/user-attachments/assets/a2332c85-e659-412c-8d9e-b6476d98c97e)
-
-
-
-
-## 用哪些技术？
-
-项目以 Spring AI 开发框架实战为核心，涉及到多种主流 AI 客户端和工具库的运用。
-
-- Java 21 + Spring Boot 3 框架
-- ⭐️ Spring AI + LangChain4j
-- ⭐️ RAG 知识库
-- ⭐️ PGvector 向量数据库
-- ⭐ Tool Calling 工具调用 
-- ⭐️ MCP 模型上下文协议
-- ⭐️ ReAct Agent 智能体构建
-- ⭐️ Serverless 计算服务
-- ⭐️ AI 大模型开发平台百炼
-- ⭐️ Cursor AI 代码生成
-- ⭐️ SSE 异步推送
-- 第三方接口：如 SearchAPI / Pexels API
-- Ollama 大模型部署
-- 工具库如：Kryo 高性能序列化 + Jsoup 网页抓取 + iText PDF 生成 + Knife4j 接口文档
-
-
-RAG 核心特性实战：
-
-![RAG 核心特性实战](https://pic.yupi.icu/1/1745224085267-57afea3b-2de9-44a0-8f53-49e338c0e6b9.png)
-
-项目架构设计图：
-
-![AI 智能体架构图](https://pic.yupi.icu/1/AI%E6%99%BA%E8%83%BD%E4%BD%93%E6%9E%B6%E6%9E%84%E5%9B%BE.png)
-
-
-## 第一期免费看
-
-第一期是公开讲解，给大家介绍项目背景、项目功能、技术选型、架构设计、教程计划等。
-
-视频地址：https://www.bilibili.com/video/BV1Eq5DzcE9o
-
-
-## 加入项目学习
-
-编程导航已有 **10 多套项目教程！** 每个项目的学习重点不同，几乎全都是前端 + 后端的 **全栈** 项目 。
-
-![](https://pic.yupi.icu/1/image-20250120113601323-20250422160856617.png)
-
-欢迎加入 [编程导航](https://mp.weixin.qq.com/s/I1oD6pAaWBvGLyFDT9AgvA?token=1925632390&lang=zh_CN)，加入后不仅可以全程跟学本项目，往期 [10+ 套原创项目教程](https://mp.weixin.qq.com/s/omIazLMQlTo9M3jFFH7NzQ?token=70787607&lang=zh_CN) 也都可以无限回看。还能享受更多原创技术资料、学习和求职指导、上百场面试回放视频，开启你的编程起飞之旅~
-
-🧧 助力新项目学习，给大家发放 **限时编程导航优惠券**，扫码即可领券加入。加入三天内不满意可全额退款，欢迎加入体验，名额有限，速来学习！
-
-<img width="404" alt="image" src="https://github.com/user-attachments/assets/56411098-b60e-4267-8ba2-4ebc5d416afc" />
-
-
-1 天不到 1 块钱，绝对是对自己最值的投资！成为编程导航会员后，可以解锁 10 多套项目的教程和资料，PC 网站和 APP 都可以学习，如图：
-
-![](https://pic.yupi.icu/1/image-20250120113756426-20250422160856746.png)
-
-## 准备工作
-
-### AI 基础知识
-
-请先观看《程序员鱼皮 AI 指南》，了解 AI 基础知识和学习路线，后续在项目中实战时会有个大致的印象，便于学习理解。
-
-⭐️ 推荐观看视频版：[https://www.bilibili.com/video/BV1i9Z8YhEja](https://www.bilibili.com/video/BV1i9Z8YhEja/)
-
-文字版：https://www.codefather.cn/course/1907378983347892226
-
-### 新建代码仓库
-
-利用 GitHub 搭建开源代码仓库，点 star 的都是精神股东
-
-代码仓库：https://github.com/liyupi/yu-ai-agent
-
-### AI 学习资源
-
-建议大家在学习 AI 项目的过程中，持续阅读 AI 大模型相关的面试题，巩固知识点。这块鱼皮已经帮大家拿捏了，我们的程序员面试刷题神器面试鸭搞了个 [AI 大模型面试题库](https://www.mianshiya.com/bank/1906189461556076546)，建议没事就阅读一些题目来学习学习。
-
-![](https://pic.yupi.icu/1/1745394632244-f7bd4196-78c7-48ad-af8f-c0319bf8c17a.png)
-
-而且由于 AI 技术日新月异，建议大家平时多关注 AI 相关的资讯动态，比如 [鱼皮开源的 AI 知识库](https://github.com/liyupi/ai-guide)，汇总了热门的 AI 大模型和工具，比如 Deepseek 使用指南、提示词技巧分享、知识干货、应用场景、AI 变现、行业资讯、教程资源等一系列内容，帮助你快速掌握 AI 技术，走在时代前沿。
-
-![](https://pic.yupi.icu/1/1745385315485-1ca9123b-eb99-4e47-a44e-675b06b307d9.png)
-
-## 学习大纲
-
-第 1 期：项目总览
-
-- 项目介绍
-- 项目优势
-- 项目功能梳理
-- 技术选型
-- 架构设计
-- AI 学习路线
-
-- - AI 应用平台的使用（Dify）
-  - AI 常用工具
-  - AI 编程技巧
-  - AI 编程技术
-
-- 学习大纲
-
-
-
-第 2 期：AI 大模型接入
-
-- AI 大模型概念
-- 接入 AI 大模型（3 种方式）
-- 后端项目初始化
-- 程序调用 AI 大模型（4 种方式）
-- 本地部署 AI 大模型
-- Spring AI 调用本地大模型
-
-
-
-第 3 期：AI 应用开发
-
-- Prompt 工程概念
-- Prompt 优化技巧
-- AI 恋爱大师应用需求分析
-- AI 恋爱大师应用方案设计
-- Spring AI ChatClient / Advisor / ChatMemory 特性
-- 多轮对话 AI 应用开发
-- Spring AI 自定义 Advisor
-- Spring AI 结构化输出 - 恋爱报告功能
-- Spring AI 对话记忆持久化
-- Spring AI Prompt 模板特性
-- 多模态概念和开发
-
-
-
-第 4 期：RAG 知识库基础
-
-- AI 恋爱知识问答需求分析
-- RAG 概念（重点理解核心步骤）
-- RAG 实战：Spring AI + 本地知识库
-- RAG 实战：Spring AI + 云知识库服务
-
-
-
-第 5 期：RAG 知识库进阶
-
-- RAG 核心特性
-
-- - 文档收集和切割（ETL）
-  - 向量转换和存储（向量数据库）
-  - 文档过滤和检索（文档检索器）
-  - 查询增强和关联（上下文查询增强器）
-
-- RAG 最佳实践和调优
-- 检索策略
-- 大模型幻觉
-
-
-
-第 6 期：工具调用
-
-- 工具概念
-- Spring AI 工具开发
-- 主流工具开发
-
-- - 文件操作
-  - 联网搜索
-  - 网页抓取
-  - 终端操作
-  - 资源下载
-  - PDF 生成
-
-- 工具进阶知识（原理和高级特性）
-
-
-
-第 7 期：MCP
-
-- MCP 概念
-- 使用 MCP（3 种方式）
-- Spring AI MCP 开发模式
-- Spring AI MCP 开发实战 - 图片搜索 MCP
-- MCP 开发最佳实践
-- 部署 MCP
-- MCP 安全问题
-
-
-
-第 8 期：AI 智能体构建
-
-- AI 智能体概念
-- 智能体实现关键
-- 使用 AI 智能体（2 种方式）
-- 自主规划智能体介绍
-- OpenManus 实现原理
-- 自主实现 Manus 智能体
-- 智能体工作流
-
-
-
-第 9 期：AI 服务化
-
-- AI 应用接口开发（SSE）
-- AI 智能体接口开发
-- AI 生成前端代码
-- AI 服务 Serverless 部
-
+| 功能 | 地址 | 参数 | 返回 |
+| --- | --- | --- | --- |
+| 健康检查 | `/api/health` | 无 | `ok` |
+| 恋爱大师（同步） | `/api/ai/love_app/chat/sync` | `message`, `chatId` | 完整文本 |
+| 恋爱大师（SSE） | `/api/ai/love_app/chat/sse` | `message`, `chatId` | 文本流 |
+| 恋爱大师（标准 SSE 事件） | `/api/ai/love_app/chat/server_sent_event` | `message`, `chatId` | SSE event stream |
+| 恋爱大师（SseEmitter） | `/api/ai/love_app/chat/sse_emitter` | `message`, `chatId` | SSE event stream |
+| YuManus 智能体 | `/api/ai/manus/chat` | `message` | SSE event stream |
+
+同步调用：
+
+```powershell
+curl.exe -G "http://localhost:8123/api/ai/love_app/chat/sync" `
+  --data-urlencode "message=我和伴侣最近总因小事争吵，怎么办？" `
+  --data-urlencode "chatId=demo-user-001"
+```
+
+查看流式输出：
+
+```powershell
+curl.exe -N -G "http://localhost:8123/api/ai/love_app/chat/sse" `
+  --data-urlencode "message=给我一个破冰聊天的建议" `
+  --data-urlencode "chatId=demo-user-001"
+```
+
+YuManus 能让模型读写本机文件、下载资源、执行终端命令和生成 PDF。仅在隔离的开发环境使用，且不要向不可信用户公开该接口。
+
+## 启用当前临时注释的配置
+
+### PgVector 持久化知识库
+
+默认是内存向量库：每次启动读取 `src/main/resources/document` 下的 Markdown。要改用 PostgreSQL + pgvector：
+
+1. 准备启用了 `vector` 扩展的 PostgreSQL。
+2. 取消 `application.yml` 中 `spring.datasource` 与 `spring.ai.vectorstore.pgvector` 两段的注释并填写实际连接信息：
+
+   ```yaml
+   spring:
+     datasource:
+       url: jdbc:postgresql://localhost:5432/yu_ai_agent
+       username: postgres
+       password: 你的数据库密码
+     ai:
+       vectorstore:
+         pgvector:
+           index-type: HNSW
+           dimensions: 1536
+           distance-type: COSINE_DISTANCE
+           max-document-batch-size: 10000
+   ```
+
+3. 取消 `src/main/java/com/yupi/yuaiagent/rag/PgVectorVectorStoreConfig.java` 中 `@Configuration` 的注释。
+4. 在 `LoveApp#doChatWithRag` 中启用 `new QuestionAnswerAdvisor(pgVectorVectorStore)`，并停用当前的 `loveAppVectorStore` 顾问；否则仍会使用内存库。
+
+`dimensions: 1536` 必须等于所用嵌入模型的向量维度。代码首次启动会创建 `public.vector_store` 并写入文档。
+
+### MCP 工具服务
+
+取消 `application.yml` 的 MCP 注释，并按需保留 SSE 或 stdio：
+
+```yaml
+spring:
+  ai:
+    mcp:
+      client:
+        sse:
+          connections:
+            server1:
+              url: http://localhost:8127
+        stdio:
+          servers-configuration: classpath:mcp-servers.json
+```
+
+- **SSE 图片搜索服务**：在 `yu-image-search-mcp-server` 执行 `.\mvnw.cmd spring-boot:run`，服务默认监听 8127，再启用 `server1`。
+- **stdio 服务**：主服务将读取 `src/main/resources/mcp-servers.json`。高德地图条目需填入 `AMAP_MAPS_API_KEY`，且系统必须能找到 `npx.cmd`。
+- **图片搜索 stdio 服务**：先在 `yu-image-search-mcp-server` 执行 `.\mvnw.cmd package`。另外将 `ImageSearchTool.java` 的 Pexels API Key 改为自己的；该密钥现在不从 YAML 读取。
+
+只启用 MCP 客户端配置并不会让现有页面自动使用 MCP：`LoveApp#doChatWithMcp` 已实现调用，但 `AiController` 尚未为它暴露 HTTP 接口；YuManus 也只使用本地注册工具数组，不会自动加入 `ToolCallbackProvider` 的 MCP 工具。
+
+## 排错
+
+- **数据库连接失败**：PgVector 已启用但数据库或 `vector` 扩展尚未就绪；恢复注释使用内存库，或检查连接信息。
+- **401 / 额度不足**：检查 DashScope、SearchAPI 的密钥、模型权限与余额。
+- **前端无法连接**：先访问健康检查，再核对开发环境地址 `http://localhost:8123/api`。
+- **SSE 无响应**：先用上面的 `curl.exe -N` 命令直连，并查看后端模型调用日志。
+- **MCP 启动失败**：检查 8127 端口、Java / `npx.cmd` 的 PATH，以及 stdio 模式引用的 JAR 是否已构建。
+- **`Port 8123 was already in use`**：已有后端实例占用端口。停止 IDEA 中旧的运行实例，或在 PowerShell 执行 `Get-NetTCPConnection -LocalPort 8123 -State Listen` 查出 `OwningProcess` 后再确认并停止对应 Java 进程。

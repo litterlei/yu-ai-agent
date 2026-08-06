@@ -38,15 +38,21 @@ public abstract class ReActAgent extends BaseAgent {
             // 先思考
             boolean shouldAct = think();
             if (!shouldAct) {
-                return "思考完成 - 无需行动";
+                return getNoActionResult();
             }
             // 再行动
             return act();
         } catch (Exception e) {
-            // 记录异常日志
-            e.printStackTrace();
-            return "步骤执行失败：" + e.getMessage();
+            log.error("智能体步骤执行失败", e);
+            throw new IllegalStateException("步骤执行失败：" + e.getMessage(), e);
         }
+    }
+
+    /**
+     * 无需执行工具时返回给用户的内容，子类可返回模型的最终回答。
+     */
+    protected String getNoActionResult() {
+        return "思考完成 - 无需行动";
     }
 
 }

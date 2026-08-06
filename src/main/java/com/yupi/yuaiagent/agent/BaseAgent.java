@@ -66,7 +66,7 @@ public abstract class BaseAgent {
         List<String> results = new ArrayList<>();
         try {
             // 执行循环
-            for (int i = 0; i < maxSteps && state != AgentState.FINISHED; i++) {
+            for (int i = 0; i < maxSteps && state == AgentState.RUNNING; i++) {
                 int stepNumber = i + 1;
                 currentStep = stepNumber;
                 log.info("Executing step {}/{}", stepNumber, maxSteps);
@@ -116,6 +116,7 @@ public abstract class BaseAgent {
                 }
             } catch (Exception e) {
                 sseEmitter.completeWithError(e);
+                return;
             }
             // 2、执行，更改状态
             this.state = AgentState.RUNNING;
@@ -125,7 +126,7 @@ public abstract class BaseAgent {
             List<String> results = new ArrayList<>();
             try {
                 // 执行循环
-                for (int i = 0; i < maxSteps && state != AgentState.FINISHED; i++) {
+                for (int i = 0; i < maxSteps && state == AgentState.RUNNING; i++) {
                     int stepNumber = i + 1;
                     currentStep = stepNumber;
                     log.info("Executing step {}/{}", stepNumber, maxSteps);
@@ -142,13 +143,15 @@ public abstract class BaseAgent {
                     results.add("Terminated: Reached max steps (" + maxSteps + ")");
                     sseEmitter.send("执行结束：达到最大步骤（" + maxSteps + "）");
                 }
-                // 正常完成
+                // 前端以该标记区分正常完成和网络异常
+                sseEmitter.send("[DONE]");
                 sseEmitter.complete();
             } catch (Exception e) {
                 state = AgentState.ERROR;
                 log.error("error executing agent", e);
                 try {
                     sseEmitter.send("执行错误：" + e.getMessage());
+                    sseEmitter.send("[DONE]");
                     sseEmitter.complete();
                 } catch (IOException ex) {
                     sseEmitter.completeWithError(ex);

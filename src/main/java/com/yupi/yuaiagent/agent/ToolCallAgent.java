@@ -35,6 +35,9 @@ public class ToolCallAgent extends ReActAgent {
     // 保存工具调用信息的响应结果（要调用那些工具）
     private ChatResponse toolCallChatResponse;
 
+    // 模型无需调用工具时的最终文本回答
+    private String finalResponse;
+
     // 工具调用管理者
     private final ToolCallingManager toolCallingManager;
 
@@ -69,7 +72,8 @@ public class ToolCallAgent extends ReActAgent {
         try {
             ChatResponse chatResponse = getChatClient().prompt(prompt)
                     .system(getSystemPrompt())
-                    .tools(availableTools)
+                    // availableTools 已经是 ToolCallback，不能再按带 @Tool 方法的普通对象扫描
+                    .toolCallbacks(availableTools)
                     .call()
                     .chatResponse();
             // 记录响应，用于等下 Act
@@ -81,6 +85,7 @@ public class ToolCallAgent extends ReActAgent {
             List<AssistantMessage.ToolCall> toolCallList = assistantMessage.getToolCalls();
             // 输出提示信息
             String result = assistantMessage.getText();
+            this.finalResponse = result;
             log.info(getName() + "的思考：" + result);
             log.info(getName() + "选择了 " + toolCallList.size() + " 个工具来使用");
             String toolCallInfo = toolCallList.stream()
@@ -89,18 +94,23 @@ public class ToolCallAgent extends ReActAgent {
             log.info(toolCallInfo);
             // 如果不需要调用工具，返回 false
             if (toolCallList.isEmpty()) {
-                // 只有不调用工具时，才需要手动记录助手消息
+                // 不调用工具说明模型已给出最终答案，记录后结束智能体
                 getMessageList().add(assistantMessage);
+                setState(AgentState.FINISHED);
                 return false;
             } else {
                 // 需要调用工具时，无需记录助手消息，因为调用工具时会自动记录
                 return true;
             }
         } catch (Exception e) {
-            log.error(getName() + "的思考过程遇到了问题：" + e.getMessage());
-            getMessageList().add(new AssistantMessage("处理时遇到了错误：" + e.getMessage()));
-            return false;
+            log.error(getName() + "的思考过程遇到了问题", e);
+            throw new IllegalStateException("智能体思考失败：" + e.getMessage(), e);
         }
+    }
+
+    @Override
+    protected String getNoActionResult() {
+        return StrUtil.blankToDefault(finalResponse, "思考完成 - 无需行动");
     }
 
     /**
