@@ -15,7 +15,7 @@ import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgDistan
 import static org.springframework.ai.vectorstore.pgvector.PgVectorStore.PgIndexType.HNSW;
 
 // 为方便开发调试和部署，临时注释，如果需要使用 PgVector 存储知识库，取消注释即可
-//@Configuration
+@Configuration
 public class PgVectorVectorStoreConfig {
 
     @Resource
@@ -32,7 +32,7 @@ public class PgVectorVectorStoreConfig {
                 .vectorTableName("vector_store")     // Optional: defaults to "vector_store"
                 .maxDocumentBatchSize(10000)         // Optional: defaults to 10000
                 .build();
-        // 加载文档
+        // 加载文档（当前配置类默认关闭，仅作为 PgVector 教学示例保留）
         List<Document> documents = loveAppDocumentLoader.loadMarkdowns();
         vectorStore.add(documents);
         return vectorStore;

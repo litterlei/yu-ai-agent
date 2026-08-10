@@ -14,7 +14,8 @@ import java.util.List;
 /**
  * 恋爱大师向量数据库配置（初始化基于内存的向量数据库 Bean）
  */
-@Configuration
+// 当前教学项目使用内存向量库，应用重启后会重新从 resources/document 加载文档。
+//@Configuration
 public class LoveAppVectorStoreConfig {
 
     @Resource

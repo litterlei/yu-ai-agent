@@ -17,10 +17,10 @@ class LoveAppTest {
     void testChat() {
         String chatId = UUID.randomUUID().toString();
         // 第一轮
-        String message = "你好，我是程序员鱼皮";
+        String message = "你好，我是杨明宇";
         String answer = loveApp.doChat(message, chatId);
         // 第二轮
-        message = "我想让另一半（编程导航）更爱我";
+        message = "我想让另一半刘伟更爱我";
         answer = loveApp.doChat(message, chatId);
         Assertions.assertNotNull(answer);
         // 第三轮
@@ -83,5 +83,9 @@ class LoveAppTest {
         String message = "帮我搜索一些哄另一半开心的图片";
         String answer =  loveApp.doChatWithMcp(message, chatId);
         Assertions.assertNotNull(answer);
+    }
+
+    @Test
+    void doChat() {
     }
 }

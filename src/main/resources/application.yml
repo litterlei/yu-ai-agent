@@ -4,10 +4,10 @@ spring:
   profiles:
     active: local
 # 临时注释掉，便于大家开发调试和部署（实际填写 PgVector 数据库信息）
-#  datasource:
-#    url: xxx
-#    username: root
-#    password: 123456
+  datasource:
+    url: jdbc:postgresql://pgm-uf61ay0y0xrs38534o.rwlb.rds.aliyuncs.com:5432/yu_ai_agent
+    username: my_user
+    password: Jp483231@
   ai:
     dashscope:
       # 需要替换为你自己的 key
@@ -17,10 +17,6 @@ spring:
           # qwen3.7-plus 会使当前 Spring AI Alibaba / DashScope SDK 组合请求到无效地址。
           # 使用 DashScope 当前稳定、且项目初始配置采用的模型。
           model: qwen-plus
-    ollama:
-      base-url: http://localhost:11434
-      chat:
-        model: gemma3:1b
 # 临时注释掉，便于大家开发调试和部署（实际需要启动 MCP 服务）
 #    mcp:
 #      client:
@@ -31,12 +27,13 @@ spring:
 #        stdio:
 #          servers-configuration: classpath:mcp-servers.json
 # 临时注释掉，便于大家开发调试和部署（实际需要启动 PgVector 数据库）
-#    vectorstore:
-#      pgvector:
-#        index-type: HNSW
-#        dimensions: 1536
-#        distance-type: COSINE_DISTANCE
-#        max-document-batch-size: 10000 # Optional: Maximum number of documents per batch
+    vectorstore:
+      pgvector:
+        index-type: HNSW
+        dimensions: 1536
+        distance-type: COSINE_DISTANCE
+        initialize-schema: true
+        max-document-batch-size: 10000 # Optional: Maximum number of documents per batch
 server:
   port: 8123
   servlet:
