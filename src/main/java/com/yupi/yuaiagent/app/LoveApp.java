@@ -123,14 +123,15 @@ public class LoveApp {
     // AI 恋爱知识库问答功能
 
     // 内存向量库方案保留；切回内存存储时，与 doChatWithRag 中对应的 Advisor 一起取消注释。
-//    @Resource(name = "loveAppVectorStore")
-//    private VectorStore loveAppVectorStore;
+    @Resource(name = "loveAppVectorStore")
+    private VectorStore loveAppVectorStore;
 
     @Resource
     private Advisor loveAppRagCloudAdvisor;
 
-    @Resource(name = "pgVectorVectorStore")
-    private VectorStore pgVectorVectorStore;
+    // 临时注释，PgVector 数据库不可用时无法注入此 Bean
+//    @Resource(name = "pgVectorVectorStore")
+//    private VectorStore pgVectorVectorStore;
 
     @Resource
     private QueryRewriter queryRewriter;
@@ -153,11 +154,11 @@ public class LoveApp {
                 // 开启日志，便于观察效果
                 .advisors(new MyLoggerAdvisor())
                 // 应用 RAG 知识库问答
-//                .advisors(new QuestionAnswerAdvisor(loveAppVectorStore))
+                .advisors(new QuestionAnswerAdvisor(loveAppVectorStore))
                 // 应用 RAG 检索增强服务（基于云知识库服务）
 //                .advisors(loveAppRagCloudAdvisor)
                 // 应用 RAG 检索增强服务（基于 PgVector 向量存储）
-                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
+//                .advisors(new QuestionAnswerAdvisor(pgVectorVectorStore))
                 // 应用自定义的 RAG 检索增强服务（文档查询器 + 上下文增强器）
 //                .advisors(
 //                        LoveAppRagCustomAdvisorFactory.createLoveAppRagCustomAdvisor(

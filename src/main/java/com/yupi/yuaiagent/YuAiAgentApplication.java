@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 @SpringBootApplication(exclude = {
         // 当前使用内存向量库，不需要连接数据库；以后启用 PgVector 时删除这一项。
-        //DataSourceAutoConfiguration.class
+        DataSourceAutoConfiguration.class
 })
 public class YuAiAgentApplication {
 
