@@ -16,16 +16,12 @@ spring:
         options:
           # qwen3.7-plus 会使当前 Spring AI Alibaba / DashScope SDK 组合请求到无效地址。
           # 使用 DashScope 当前稳定、且项目初始配置采用的模型。
-          model: qwen-plus
+          model: qwen-max
 # 临时注释掉，便于大家开发调试和部署（实际需要启动 MCP 服务）
-#    mcp:
-#      client:
-#        sse:
-#          connections:
-#            server1:
-#              url: http://localhost:8127
-#        stdio:
-#          servers-configuration: classpath:mcp-servers.json
+    mcp:
+      client:
+        stdio:
+          servers-configuration: classpath:mcp-servers.json
 # 临时注释掉，便于大家开发调试和部署（实际需要启动 PgVector 数据库）
 #    vectorstore:
 #      pgvector:

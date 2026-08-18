@@ -218,6 +218,7 @@ public class LoveApp {
                 // 开启日志，便于观察效果
                 .advisors(new MyLoggerAdvisor())
                 .toolCallbacks(toolCallbackProvider)
+                .toolCallbacks(allTools)
                 .call()
                 .chatResponse();
         String content = chatResponse.getResult().getOutput().getText();
